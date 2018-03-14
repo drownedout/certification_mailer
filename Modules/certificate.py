@@ -64,8 +64,8 @@ class Certificate():
 
 				pdf_document = word.Documents.Open(self.base_dir + 'placeholder.docx'))
 
-				# Document is saved as pdf
-				pdf_document.SaveAs(self.base_dir + "\\Certificates\\" + self.full_name, FileFormat=17)
+				# Document is saved as pdf in designated CCS or CES folders
+				pdf_document.SaveAs(self.base_dir + "\\Certificates\\" + self.certification_type + "\\" + self.full_name, FileFormat=17)
 				pdf_document.Close()
 
 				i.text = "{{name}}"
