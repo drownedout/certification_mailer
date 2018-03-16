@@ -3,7 +3,8 @@ import comtypes.client
 from docx import Document
 from docx.shared import Pt
 from docx.enum.style import WD_STYLE_TYPE
-
+from Templates.ccs_html_template import ccs_html_template
+from Templates.ces_html_template import ces_html_template
 
 class CertificateMailer():
 	"""
@@ -115,6 +116,9 @@ class CertificateMailer():
 		# Converts renewal date into readable string
 		renewal_date= renewal_date.strftime('%m/%d/%Y')
 
+		# Full name
+		full_name = first_name + " " + last_name
+
 		# Converts ID to string
 		ncbfaa_id= str(ncbfaa_id)
 
@@ -127,9 +131,12 @@ class CertificateMailer():
 
 		mail.Subject= 'NCBFAA - ' + self.certification_year + ' ' + self.certification_type + ' Renewal'
 
-		"""
-			TODO: NEED TO ADD TEMPLATES
-		"""
+		if self.certification_type == 'CCS':
+			mail.HTMLBody = ccs_html_template(self.certification_year, first_name, ncbfaa_id, renewal_date)
+		elif self.certification_type == 'CES':
+			mail.HTMLBody = ces_html_template(self.certification_year, first_name, ncbfaa_id, renewal_date)
+		else:
+			print('Invalid Certification Type')
 
 		attachment= self.base_dir + "\Certificates\\" + full_name + '_' + self.certification_year + ' ' + self.certification_type + " Certificate.pdf"
 		mail.Attachments.Add(Source =attachment)
@@ -141,8 +148,16 @@ class CertificateMailer():
 			A function that loops through each row of a given workbook, creates certificates, and sends
 			them out attached to a renewal email.
 		"""
-		load_workbook()
+		load_excel_sheet()
+
+		# Setting to True, so excel skips the first line (excel header)
+		first_line = True
+
 		for row in sheet:
+			# Skip first line, switch to false
+			if first_line:
+				first_line = False
+				continue
 			"""
 				row[2] = first_name,
 				row[1] = last_name,
