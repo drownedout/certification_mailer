@@ -3,8 +3,8 @@ import comtypes.client
 from docx import Document
 from docx.shared import Pt
 from docx.enum.style import WD_STYLE_TYPE
-from Templates.ccs_html_template import ccs_html_template
-from Templates.ces_html_template import ces_html_template
+from .Templates.ccs_html_template import ccs_html_template
+from .Templates.ces_html_template import ces_html_template
 
 class CertificateMailer():
 	"""
