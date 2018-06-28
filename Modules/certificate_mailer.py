@@ -1,10 +1,12 @@
 import os
 import comtypes.client
+import win32com.client as win32
 from docx import Document
 from docx.shared import Pt
 from docx.enum.style import WD_STYLE_TYPE
-from .Templates.ccs_html_template import ccs_html_template
-from .Templates.ces_html_template import ces_html_template
+from openpyxl import load_workbook
+from .Messages.ccs_html_template import ccs_html_template
+from .Messages.ces_html_template import ces_html_template
 
 class CertificateMailer():
 	"""
@@ -36,6 +38,8 @@ class CertificateMailer():
 			    '_renewal_list.xlsx')
 		sheet = wb.get_sheet_by_name('Pending')
 
+		return sheet
+
 	def create_certificate(self, first_name, last_name):
 		"""
 		A function that leverages the class' attributes to output a customized
@@ -46,11 +50,13 @@ class CertificateMailer():
 			last_name(str): Last name
 		"""
 
+		full_name = first_name + " " + last_name
+
 		# Loads excel file and certificate attachment
 		word = comtypes.client.CreateObject('Word.Application')
 		document = Document(
 				   self.base_dir +
-				   '/Templates/' +
+				   '/Modules/Templates/' +
 				   self.certification_type.lower() +
 				   '_template_' +
 				   self.certification_year +
@@ -73,19 +79,19 @@ class CertificateMailer():
 				# Save document as .docx - acts as a placeholder
 				document.save('placeholder.docx')
 
-				pdf_document = word.Documents.Open(self.base_dir + 'placeholder.docx')
+				pdf_document = word.Documents.Open(self.base_dir + '\\placeholder.docx')
 
 				# Document is saved as pdf in designated CCS or CES folders
 				pdf_document.SaveAs(
 						    self.base_dir +
 						    "\\Certificates\\" +
-						    self.certification_type +
+						    self.certification_type + 
 						    "\\" +
 						    full_name +
 						    '_' +
-						    certification_year +
+						    self.certification_year +
 						    ' ' +
-						    certification_type +
+						    self.certification_type +
 						    " Certificate",
 						    FileFormat = 17)
 
@@ -138,8 +144,9 @@ class CertificateMailer():
 		else:
 			print('Invalid Certification Type')
 
-		attachment= self.base_dir + "\Certificates\\" + full_name + '_' + self.certification_year + ' ' + self.certification_type + " Certificate.pdf"
-		mail.Attachments.Add(Source =attachment)
+		attachment = self.base_dir + "\\Certificates\\" + self.certification_type + "\\" + full_name + '_' + self.certification_year + ' ' + self.certification_type + " Certificate.pdf"
+		
+		mail.Attachments.Add(Source=attachment)
 
 		mail.Send()
 
@@ -148,7 +155,7 @@ class CertificateMailer():
 			A function that loops through each row of a given workbook, creates certificates, and sends
 			them out attached to a renewal email.
 		"""
-		load_excel_sheet()
+		sheet = self.load_excel_sheet()
 
 		# Setting to True, so excel skips the first line (excel header)
 		first_line = True
@@ -165,10 +172,16 @@ class CertificateMailer():
 				row[4] = renewal_date,
 				row[0] = ncbfaa_id
 			"""
-			create_certificate(row[2].value, row[1].value)
-			create_and_send_email(
+			self.create_certificate(row[2].value, row[1].value)
+			self.create_and_send_email(
 							    row[2].value,
 							    row[1].value,
 							    row[3].value,
 							    row[0].value,
 							    row[4].value)
+
+			list_values = []
+			full_name = row[2].value + " " + row[1].value
+			list_values.append(full_name + ": Completed")
+
+		return list_values

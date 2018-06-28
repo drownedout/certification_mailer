@@ -1,13 +1,12 @@
 import os
 from tkinter import *
 from Modules.application_window import ApplicationWindow
-from Modules.certificate_mailer import CertificateMailer
 
 fileDir = os.path.dirname(os.path.realpath(__file__))
 
 def main():
 	root = Tk()
-	application_window = ApplicationWindow()
+	application_window = ApplicationWindow(fileDir)
 	root.geometry("825x600")
 	root.mainloop()
 
